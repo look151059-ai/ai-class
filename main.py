@@ -265,6 +265,35 @@ def _running_in_streamlit() -> bool:
         return False
 
 
+def _maybe_show_url_popup(url: str) -> None:
+    """
+    Some IDEs run Python without showing a real terminal. In that case, printing
+    the URL is easy to miss. On Windows, optionally show a small dialog.
+
+    Disable via: STREAMLIT_URL_POPUP=0
+    """
+
+    if os.name != "nt":
+        return
+
+    flag = os.environ.get("STREAMLIT_URL_POPUP", "1").strip().lower()
+    if flag in ("0", "false", "no", "off"):
+        return
+
+    try:
+        import ctypes
+
+        ctypes.windll.user32.MessageBoxW(
+            None,
+            f"Streamlit 已啟動\n\n網址：{url}\n\n（也已寫入 STREAMLIT_URL.txt）",
+            "Streamlit URL",
+            0x40,  # MB_ICONINFORMATION
+        )
+    except Exception:
+        # If the dialog fails, fall back to stdout only.
+        return
+
+
 if __name__ == "__main__":
     if _running_in_streamlit():
         main()
@@ -281,6 +310,8 @@ if __name__ == "__main__":
             (APP_DIR / "STREAMLIT_URL.txt").write_text(url + "\n", encoding="utf-8")
         except Exception:
             pass
+
+        _maybe_show_url_popup(url)
 
         # Avoid the first-run email prompt and make output less confusing in IDE consoles.
         os.environ.setdefault("STREAMLIT_BROWSER_GATHER_USAGE_STATS", "false")
