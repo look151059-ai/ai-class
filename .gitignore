@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+.streamlit/
+.venv/
+.vscode/
+.ruff_cache/
+.pytest_cache/
+.DS_Store
+.tmp_*.joblib
+*.tmp
+*.whl
+*.bin
+.tmp/
+STREAMLIT_URL.txt
